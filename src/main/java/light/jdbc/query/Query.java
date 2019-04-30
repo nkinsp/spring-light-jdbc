@@ -9,6 +9,15 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import light.jdbc.code.DbContext;
+import light.jdbc.db.DbOperationAdapter;
+import light.jdbc.db.adapter.DeleteDbOperationAdapter;
+import light.jdbc.db.adapter.FindBeanListDbOperationAdapter;
+import light.jdbc.db.adapter.FindDbOperationAdapter;
+import light.jdbc.db.adapter.FindPageDbOperationAdapter;
+import light.jdbc.db.adapter.InsertDbOperationAdapter;
+import light.jdbc.db.adapter.PagingDbOperationAdapter;
+import light.jdbc.db.adapter.UpdateDbOperationAdapter;
+import light.jdbc.result.Page;
 import light.jdbc.table.TableMapping;
 
 public interface Query<T> {
@@ -19,6 +28,11 @@ public interface Query<T> {
 	 * @return
 	 */
 	TableMapping<T> getTableMapping();
+
+	/**
+	 * @return
+	 */
+	DbContext getDbContext();
 	
 	/**
 	 * 添加
@@ -473,6 +487,7 @@ public interface Query<T> {
 		return 
 				where().
 				condition(condition).
+				condition(" ").
 				addParams(params)
 			;
 	}
@@ -576,30 +591,44 @@ public interface Query<T> {
 	
 	QueryBuilder getQueryBuilder();
 	
-	LambdaQuery<T> lambda();
-	
 	default List<Object[]> getArrayParams(){
 		return getParams().stream().map(object->(Object[])object).collect(Collectors.toList());
 	}
 	
 	default T find() {
-		return null;
+		return execute(new FindDbOperationAdapter<>(getDbContext(), this));
 	}
 	
 	default List<T> findList() {
-		return null;
+		return findList(getTableMapping().getTableClass());
+	}
+	
+	default <En> List<En> findList(Class<En> entityClass){
+		return execute(new FindBeanListDbOperationAdapter<>(getDbContext(),this,entityClass));
+	}
+	
+	default List<T> findList(int pageNo,int pageSize){
+		return execute(new PagingDbOperationAdapter<>(getDbContext(), this, getTableMapping().getTableClass(), pageNo, pageSize));
+	}
+	
+	default Page<T> findPage(int pageNo,int pageSize){
+		return execute(new FindPageDbOperationAdapter<>(getDbContext(), this, getTableMapping().getTableClass(), pageNo, pageSize));
 	}
 	
 	default int delete() {
-		return 0;
+		return execute(new DeleteDbOperationAdapter<>(getDbContext(), this));
 	}
 	
 	default int update() {
-		return 0;
+		return execute(new UpdateDbOperationAdapter<>(getDbContext(), this));
 	}
 	
 	default int insert() {
-		return 0;
+		return execute(new InsertDbOperationAdapter<>(getDbContext(), this));
+	}
+	
+	default  <R> R execute(DbOperationAdapter adapter) {
+		return adapter.adapter();
 	}
 	
 	

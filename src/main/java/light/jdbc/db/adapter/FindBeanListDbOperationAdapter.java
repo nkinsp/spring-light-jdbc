@@ -30,11 +30,16 @@ public class FindBeanListDbOperationAdapter<T,En> extends AbstractDbOperationAda
 		}
 		return list;
 	}
+	
+	protected String builderQuerySql() {
+		String sql = query.getQueryBuilder().buildSelectSQL();
+		return sql;
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Object dbAdapter() {
-		String sql = query.getQueryBuilder().buildSelectSQL();
+		String sql = builderQuerySql();
 		log.info("==> execute [sql={},params={}]",sql,query.getParams());
 		if(MapActiveRecord.class.isAssignableFrom(enClass)) {
 			return dbOperation.queryListMap(sql, query.getParams().toArray()).stream().map(map->{

@@ -1,12 +1,9 @@
-package jdbc_fplus.jdbc_fplus.model;
+package example.model;
 
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.cache.annotation.Cacheable;
 
-import light.jdbc.activerecord.ActiveRecord;
 import light.jdbc.activerecord.ConfigColumn;
 import light.jdbc.activerecord.MapActiveRecord;
 import light.jdbc.annotation.Table;

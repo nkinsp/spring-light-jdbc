@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 import light.jdbc.code.DbConfig;
 import light.jdbc.code.DbContext;
+import light.jdbc.db.DbOperationAdapter;
 import light.jdbc.enums.FieldType;
 import light.jdbc.enums.IdType;
 import light.jdbc.query.Field;
-import light.jdbc.query.LambdaQuery;
 import light.jdbc.query.Query;
 import light.jdbc.query.QueryBuilder;
 import light.jdbc.table.TableMapping;
@@ -27,7 +27,7 @@ import light.jdbc.util.EntityUtils;
  * @author hanjiang.Yue
  * @param <T>
  */
-public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuilder,LambdaQuery<T>{
+public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuilder{
 
 	/**
 	 * sql builder
@@ -83,6 +83,8 @@ public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuild
 	 * 数据配置
 	 */
 	private DbConfig config;
+	
+	private DbContext context;
 	
 	/**
 	 * @return the fieldBatch
@@ -247,6 +249,11 @@ public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuild
 		this.fieldMap = new LinkedHashMap<>();
 		this.fieldBatch = new ArrayList<>();
 		this.config = config;
+	}
+	
+	public AbstractSupportQueryImpl(TableMapping<T> tableMapping,DbContext context) {
+		this(tableMapping,context.getConfig());
+		this.context = context;
 	}
 
 	@Override
@@ -456,10 +463,6 @@ public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuild
 		return this;
 	}
 	
-	@Override
-	public LambdaQuery<T> lambda() {
-		return this;
-	}
 	
 	@Override
 	public <R> Query<T> where(String condition,Class<R> tableClass, Consumer<Query<R>> where) {
@@ -490,5 +493,16 @@ public abstract class AbstractSupportQueryImpl<T> implements Query<T>,QueryBuild
 		this.params = null;
 	}
 
+
+	@Override
+	public DbContext getDbContext() {
+		return this.context;
+	}
+	
+	@Override
+	public String buildPagingSQL(int pageNo, int pageSize) {
+		limit((pageNo-1)*pageSize, pageSize);
+		return buildSelectSQL();
+	}
 	
 }

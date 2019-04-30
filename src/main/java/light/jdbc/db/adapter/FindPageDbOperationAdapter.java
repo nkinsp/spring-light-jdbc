@@ -13,19 +13,12 @@ import light.jdbc.result.Page;
  * @param <T>
  * @param <En>
  */
-public class FindPageDbOperationAdapter<T,En> extends FindBeanListDbOperationAdapter<T, En>{
+public class FindPageDbOperationAdapter<T,En> extends PagingDbOperationAdapter<T, En>{
 
-	private Integer pageNo;
-	
-	private Integer pageSize;
 	
 	public FindPageDbOperationAdapter(DbContext dbContext, Query<T> query, Class<En> enClass,Integer pageNo,Integer pageSize) {
-		super(dbContext, query, enClass);
-		this.pageNo = pageNo;
-		this.pageSize = pageSize;
+		super(dbContext, query, enClass,pageNo,pageSize);
 	}
-	
-	
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -37,8 +30,6 @@ public class FindPageDbOperationAdapter<T,En> extends FindBeanListDbOperationAda
 		}
 		log.info("==> execute [sql={},params={}]",selectCountSQL,query.getParams());
 		Integer count = dbOperation.queryUnique(selectCountSQL, Integer.class, query.getParams().toArray());
-		//查询列表数据
-		query.limit((pageNo-1)*pageSize, pageSize);
 		List<En> list = (List<En>) super.dbAdapter();
 		return new Page<>(count,list);
 		

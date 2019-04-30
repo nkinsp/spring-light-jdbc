@@ -36,7 +36,6 @@ public class EntityUtils {
 			return null;
 		}
 		if(Map.class.isAssignableFrom(entity.getClass())) {
-			System.out.println(entity+"sss");
 			return (Map<String, Object>) entity;
 		}
 		return getEntityToMap(entity);

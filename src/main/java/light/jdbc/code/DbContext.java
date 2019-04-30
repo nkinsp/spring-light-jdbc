@@ -3,7 +3,9 @@ package light.jdbc.code;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
@@ -20,6 +22,7 @@ import light.jdbc.db.DbOperation;
 import light.jdbc.db.springjdbc.SpringJdbcDbOperation;
 import light.jdbc.enums.DbType;
 import light.jdbc.query.Query;
+import light.jdbc.query.impl.DB2DialectQueryImpl;
 import light.jdbc.query.impl.MySqlDialectQueryImpl;
 import light.jdbc.query.impl.OracleDialectQueryImpl;
 import light.jdbc.query.impl.PostgreDialectQueryImpl;
@@ -31,9 +34,6 @@ public class DbContext{
 	
 	private static final Logger log = LoggerFactory.getLogger(DbContext.class);
 	
-	/**
-	 * 表映射
-	 */
 	private static final Map<String, TableMapping<?>> TABLEMAPPING = new ConcurrentHashMap<>();
 
 	private DbConfig config;
@@ -91,7 +91,14 @@ public class DbContext{
 		if(dbType == DbType.ORACLE) {
 			return new OracleDialectQueryImpl<>(mapping,config);
 		}
+		if(dbType == DbType.DB2) {
+			return new DB2DialectQueryImpl<>(mapping, config);
+		}
 		return null;
+	}
+	
+	public static <M> Query<M> createQuery(Class<M> tableClass,DbContext context) {
+		return createQuery(tableClass, context.getConfig());
 	}
 	
 	
@@ -100,6 +107,8 @@ public class DbContext{
 		return ActiveRecord.dbContext.table(tableClass);
 		
 	}
+	
+
 
 
 	public DbOperation getDbOperation() {
@@ -190,29 +199,21 @@ public class DbContext{
 			connection = this.config.getDbOperation().getDataSource().getConnection();
 			DatabaseMetaData metaData =connection.getMetaData();
 			String url = metaData.getURL().toLowerCase();
-			if(url.startsWith("jdbc:mysql:")) {
-				return DbType.MYSQL;
+			Map<String, DbType> dbTypeMap = new HashMap<>();
+			dbTypeMap.put("jdbc:mysql:", DbType.MYSQL);
+			dbTypeMap.put("jdbc:sqlite:", DbType.SQLITE);
+			dbTypeMap.put("jdbc:oracle:", DbType.ORACLE);
+			dbTypeMap.put("jdbc:postgresql:", DbType.POSTGRE_SQL);
+			dbTypeMap.put("jdbc:db2:", DbType.DB2);
+			dbTypeMap.put("jdbc:sqlserver:", DbType.SQSERVER);
+			for (Entry<String, DbType> en : dbTypeMap.entrySet()) {
+				if(url.startsWith(en.getKey())) {
+					return en.getValue();
+				}
 			}
-			else if(url.startsWith("jdbc:sqlite:")) {
-				return  DbType.SQLITE;
-			}
-			else if(url.startsWith("jdbc:oracle:")) {
-				return  DbType.ORACLE;
-			}
-			else if(url.startsWith("jdbc:postgresql:")) {
-				return DbType.POSTGRE_SQL;
-			}
-			else if(url.startsWith("jdbc:db2:")) {
-				return DbType.DB2;
-			}
-			else if(url.startsWith("jdbc:sqlserver:")) {
-				return DbType.SQSERVER;
-			}
-			throw new RuntimeException("No match DB");
+			throw new RuntimeException("No Match DB");
 		} catch (Exception e) {
-			// TODO: handle exception
 			throw new RuntimeException("init dbType Error", e);
-		
 		}finally {
 			if(connection != null) {
 				try {

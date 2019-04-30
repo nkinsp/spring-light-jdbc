@@ -1,7 +1,6 @@
 package light.jdbc.cache.impl;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -10,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import light.jdbc.cache.CacheOperation;
-import light.jdbc.util.MD5Utils;
 
 /**
  * 简单的HashMap 缓存

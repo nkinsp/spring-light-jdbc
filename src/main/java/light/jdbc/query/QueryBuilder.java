@@ -52,6 +52,8 @@ public interface QueryBuilder {
 	 
 	 String buildSelectSQL(List<String> cols);
 	 
+	 String buildPagingSQL(int pageNo,int pageSize);
+	 
 	void release();
 	 
 	 

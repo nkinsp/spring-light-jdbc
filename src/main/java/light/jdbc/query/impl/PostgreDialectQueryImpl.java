@@ -1,6 +1,7 @@
 package light.jdbc.query.impl;
 
 import light.jdbc.code.DbConfig;
+import light.jdbc.code.DbContext;
 import light.jdbc.query.Query;
 import light.jdbc.table.TableMapping;
 
@@ -18,6 +19,14 @@ public class PostgreDialectQueryImpl<T> extends AbstractSupportQueryImpl<T>{
 	public PostgreDialectQueryImpl(TableMapping<T> tableMapping, DbConfig config) {
 		super(tableMapping, config);
 	}
+	
+	
+
+	public PostgreDialectQueryImpl(TableMapping<T> tableMapping, DbContext context) {
+		super(tableMapping, context);
+	}
+
+
 
 	@Override
 	public Query<T> limit(int pageNo, int pageSize) {

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import light.jdbc.db.DbOperationAdapter;
 import light.jdbc.db.adapter.DeleteBatchDbOperationAdapter;
@@ -65,9 +64,13 @@ public interface DbRepository<M,Id> {
 	 * @return
 	 */
 	default Query<M> createQuery(Consumer<Query<M>> consumer){
-		Query<M> query = dbContext().createQuery(modelClass());
+		Query<M> query = createQuery();
 		consumer.accept(query);
 		return query;
+	}
+	
+	default Query<M>  createQuery(){
+		return dbContext().createQuery(modelClass());
 	}
 	
 	/**
@@ -96,6 +99,10 @@ public interface DbRepository<M,Id> {
 		}
 	}
 	
+	default Query<M>  where(){
+		return dbContext().createQuery(modelClass()).where();
+	}
+	
 	/**
 	 * 通过id获取
 	 * @author hanjiang.Yue
@@ -108,10 +115,6 @@ public interface DbRepository<M,Id> {
 				createQuery(q->q.where().idEq(id)))
 		);
 	}
-	
-//	default M find(String sql,Function<ResultSet,M> consumer,Object...params) {
-//		execute(new ExecuteSQLDbOperation<>(getDbContext(), sql, fun, params))
-//	}
 	
 	/**
 	 * Find Map 
@@ -537,5 +540,10 @@ public interface DbRepository<M,Id> {
 		}
 		return id;
 	}
+	
+	default Query<M> select(String...fields){
+		return createQuery().select(fields);
+	}
+	
 	
 }
