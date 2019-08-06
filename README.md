@@ -2,4 +2,4 @@
 
 迁移到
 
-https://github.com/smile-yue/jasmine-orm
+https://github.com/yuehriver/jasmine-orm
